@@ -6,8 +6,8 @@ ENV GOLANG_VERSION 1.9.4
 ENV GOLANG_SRC_URL https://golang.org/dl/go$GOLANG_VERSION.src.tar.gz
 ENV GOLANG_SRC_SHA256 0573a8df33168977185aa44173305e5a0450f55213600e94541604b75d46dc06
 
-ENV TERRAFORM_VERSION 0.11.8
-ENV TERRAFORM_IBMCLOUD_VERSION v0.23.0
+ENV TERRAFORM_VERSION 0.12.0
+ENV TERRAFORM_IBMCLOUD_VERSION v1.2.0
 
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 
@@ -29,8 +29,7 @@ RUN set -ex \
     && ./make.bash \
     && rm -rf /*.patch \
     && apk del .build-deps \
-    && apk add jq \
-    && apk add openssh
+    && apk add jq
 
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 
@@ -53,25 +52,8 @@ RUN echo $' providers { \n \
 WORKDIR $GOPATH/bin
 
 RUN wget https://github.com/IBM-Cloud/terraform-provider-ibm/releases/download/${TERRAFORM_IBMCLOUD_VERSION}/linux_amd64.zip
+
 RUN unzip linux_amd64.zip
 RUN chmod +x terraform-provider-ibm_${TERRAFORM_IBMCLOUD_VERSION}
-
-
-################################################################################################
-# Get Kubectl CLI
-# Reference: https://kubernetes.io/docs/tasks/tools/install-kubectl/
-################################################################################################
-RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
-RUN chmod +x ./kubectl
-RUN mv ./kubectl /usr/local/bin/kubectl
-RUN curl -fsSL https://plugins.cloud.ibm.com/install/linux | sh
-
-################################################################################################
-# Get calicoctl CLI
-# Reference: https://docs.projectcalico.org/v3.5/usage/calicoctl/install
-################################################################################################
-RUN curl -O -L  https://github.com/projectcalico/calicoctl/releases/download/v3.5.8/calicoctl
-RUN chmod +x calicoctl
-RUN mv ./calicoctl /usr/local/bin/calicoctl
 
 COPY . $GOPATH/bin/infrastructure-code
